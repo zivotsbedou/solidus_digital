@@ -1,28 +1,39 @@
 en:
+  activerecord:
+    attributes:
+      spree/digital:
+        drm: Protected PDF (license page and encryption)
+    errors:
+      models:
+        spree/digital:
+          attributes:
+            drm:
+              pdf_only: needs a PDF file
   spree:
-    controller:
-      controller_name: Digitals
+    digital_mailer:
+      download_links:
+        subject: "%{store}: downloads for order %{number}"
+        instructions: Thank you for your payment for order %{number}. Download your files below.
+        download: Download %{filename}
+        limits:
+          one: Each link works for %{count} day.
+          other: Each link works for %{count} days.
     digitals:
       broken_file: Warning! this file is broken
-      current_file: Current File
       delete_file: Delete this file
       delete_file_confirmation: Are you sure you want to delete the file %{filename}?
       digitals: Digitals
       digital_delivery: Digital Delivery
-      digital_download: Download %{filename} ↓
-      digital_download_links: Digital Download Links
-      file_is_not_ready: File is processing, please stand by
-      digital_format:
-        mp3: Audio MP3
-        mobi: Kindle eBook
-        epub: ePub eBook
-        pdf: pdf eBook
-        zip: ZIP file
       digital_versions: Digital Versions
-      downloads_reset: Digital Downloads Reset
+      downloads_reset: Digital downloads were reset and the links e-mailed again
       files: Files
+      license:
+        title: This copy is licensed to you
+        text: Please do not share it.
+        licensed_to: "Licensed to: %{email}"
+        order: "Order: %{number}"
       new_file: New File
-      reset_downloads: Reset Digital Downloads
+      reset_downloads: Reset and resend digital downloads
       unauthorized:
         explained: This download link has expired.
         unauthorized: Unauthorized

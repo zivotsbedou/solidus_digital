@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 module Spree
-  class DigitalLink < ApplicationRecord
+  class DigitalLink < Spree::Base
     belongs_to :digital
     belongs_to :line_item
 
@@ -9,23 +9,15 @@ module Spree
     validates :secret, length: { is: 30 }
     before_validation :set_defaults, on: :create
 
-    delegate :attachment_file_name, :cloud?, to: :digital
+    delegate :attachment, to: :digital
 
-    # Can this link still be used? It is valid if it's less than 24 hours old and was not accessed more than 3 times
+    # A link works while its order stays paid, within the configured days and downloads.
     def authorizable?
-      !(expired? || access_limit_exceeded?)
+      line_item.order.paid? && attachment.attached? && !expired? && !access_limit_exceeded?
     end
 
     def expired?
-      created_at <= Spree::DigitalConfiguration[:authorized_days].day.ago
-    end
-
-    def ready?
-      attachment.exists?
-    end
-
-    def file_exists?
-      cloud? ? attachment.exists? : File.file?(attachment.path)
+      created_at <= Spree::DigitalConfiguration[:authorized_days].days.ago
     end
 
     def access_limit_exceeded?
@@ -41,16 +33,7 @@ module Spree
     end
 
     def reset!
-      update_column :access_counter, 0
-      update_column :created_at, Time.zone.now
-    end
-
-    def attachment
-      if digital.drm?
-        digital.drm_records.find_by(line_item: line_item).attachment
-      else
-        digital.attachment
-      end
+      update_columns(access_counter: 0, created_at: Time.current)
     end
 
     private

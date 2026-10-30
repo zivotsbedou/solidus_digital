@@ -28,7 +28,7 @@ RSpec.describe Spree::Admin::DigitalsController do
 
         variants_with_digitals.each do |variant|
           variant.digitals.each do |digital|
-            expect(response.body).to include(digital.attachment_file_name)
+            expect(response.body).to include(digital.attachment.filename.to_s)
           end
         end
       end

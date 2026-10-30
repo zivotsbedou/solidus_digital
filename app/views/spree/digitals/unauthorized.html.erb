@@ -1,9 +1,2 @@
-<% if defined?(SpreeFancy) %>
-  <% content_for :subheader do %>
-    <h1><%= I18n.t('spree.digitals.unauthorized.unauthorized') %></h1>
-  <% end %>
-<% else %>
-  <h1><%= I18n.t('spree.digitals.unauthorized.unauthorized') %></h1>
-<% end %>
-
-<%= I18n.t('spree.digitals.unauthorized.explained') %>
+<h1><%= I18n.t('spree.digitals.unauthorized.unauthorized') %></h1>
+<p><%= I18n.t('spree.digitals.unauthorized.explained') %></p>

@@ -14,8 +14,10 @@ module Spree
     # should digitals be kept around after the associated product is destroyed
     preference :keep_digitals, :boolean, default: false
 
-    # number of seconds before an s3 link expires
-    preference :s3_expiration_seconds, :integer, default: 10
+    # TrueType fonts for the license page of protected PDFs; the default
+    # PDF font only covers Western European characters
+    preference :license_font, :string, default: nil
+    preference :license_bold_font, :string, default: nil
 
     # number of digital links generated per line item
     # accepts: 'quantity' or Integer numbers

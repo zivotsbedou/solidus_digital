@@ -155,36 +155,13 @@ RSpec.describe Spree::Order do
     end
   end
 
-  describe '#generate_digital_links' do
+  describe 'completing an unpaid order' do
     let(:digital_variant) { create(:variant, digitals: [create(:digital)]) }
+    let(:order) { create(:order_ready_to_complete, line_items_attributes: [{ variant: digital_variant, quantity: 8 }]) }
 
-    subject(:links) { order.digital_links }
-
-    context "when order in complete state" do
-      let(:order) {
-        create(
-          :order_ready_to_complete,
-          line_items_attributes: [{ variant: digital_variant, quantity: 8 }]
-        )
-      }
-
-      it "creates a link for each quantity of a digital Variant" do
-        order.complete!
-        expect(links.count).to eq(8)
-      end
-    end
-
-    context "when order is in other state" do
-      let(:order) {
-        create(
-          :order_with_line_items,
-          line_items_attributes: [{ variant: digital_variant, quantity: 8 }]
-        )
-      }
-
-      it "doesn't create a link for digital Variant" do
-        expect(links.count).to eq(0)
-      end
+    it 'creates no download links before the payment is captured' do
+      order.complete!
+      expect(order.digital_links).to be_empty
     end
   end
 

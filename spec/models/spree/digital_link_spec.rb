@@ -39,7 +39,7 @@ RSpec.describe Spree::DigitalLink do
   end
 
   context "authorization" do
-    let(:link) { create(:digital_link) }
+    let(:link) { create(:digital_link, line_item: create(:order_ready_to_ship).line_items.first) }
 
     before { Spree::DigitalConfiguration.reset }
 
@@ -71,6 +71,11 @@ RSpec.describe Spree::DigitalLink do
       expect(link.authorize!).to be false
     end
 
+    it "is not #authorized? when the order is not paid" do
+      link.line_item.order.update!(payment_state: 'balance_due')
+      expect(link.authorizable?).to be false
+    end
+
     it "is not #authorized? when both access_counter and created_at are invalid" do
       expect(link.authorizable?).to be true
       allow(link).to receive_messages(
@@ -83,7 +88,7 @@ RSpec.describe Spree::DigitalLink do
 
   describe '#reset!' do
     it 'resets the access counter' do
-      link = create(:digital_link)
+      link = create(:digital_link, line_item: create(:order_ready_to_ship).line_items.first)
       link.authorize!
       expect(link.access_counter).to eq(1)
 

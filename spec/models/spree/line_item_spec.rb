@@ -22,14 +22,9 @@ RSpec.describe Spree::LineItem do
   describe "#create_digital_links" do
     let(:line_item) { create(:line_item, order: order, variant: digital_variant) }
 
-    context "digital has drm restrictions" do
-      let(:digital) { create(:digital, drm: true) }
-
-      it "creates digital link to drm record" do
-        line_item.create_digital_links
-
-        expect(digital.drm_records.count).to eq(1)
-      end
+    it "keeps links that were already created" do
+      line_item.create_digital_links
+      expect { line_item.create_digital_links }.not_to change { line_item.digital_links.reload.pluck(:secret) }
     end
 
     context "digital links" do

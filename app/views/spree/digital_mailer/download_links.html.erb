@@ -1,0 +1,10 @@
+<p><%= t('.instructions', number: @order.number) %></p>
+<% @order.digital_line_items.each do |item| %>
+  <p><strong><%= item.variant.descriptive_name %></strong></p>
+  <ul>
+    <% item.digital_links.each do |link| %>
+      <li><%= link_to t('.download', filename: link.attachment.filename), spree.digital_url(secret: link.secret) %></li>
+    <% end %>
+  </ul>
+<% end %>
+<p><%= t('.limits', count: Spree::DigitalConfiguration[:authorized_days]) %></p>

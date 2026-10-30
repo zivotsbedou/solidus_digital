@@ -27,6 +27,10 @@ module SolidusDigital
       app.config.spree.stock_splitters << "Spree::Stock::Splitter::DigitalSplitter"
     end
 
+    initializer "solidus_digital.subscribers", after: "spree.environment" do |app|
+      app.config.spree.subscribers << "SolidusDigital::DeliverySubscriber"
+    end
+
     # use rspec for tests
     config.generators do |g|
       g.test_framework :rspec

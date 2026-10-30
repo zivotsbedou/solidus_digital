@@ -1,5 +1,5 @@
-<% if digital.attachment_file_name.present? %>
-  <%= "DRM" if digital.drm %> <%= digital.attachment_file_name %> (<%= number_to_human_size(digital.attachment_file_size) %>)
+<% if digital.attachment.attached? %>
+  <%= "DRM" if digital.drm %> <%= digital.attachment.filename %> (<%= number_to_human_size(digital.attachment.byte_size) %>)
 <% else %>
   <%= I18n.t('spree.digitals.broken_file') %>
 <% end %>

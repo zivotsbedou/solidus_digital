@@ -3,10 +3,6 @@
 module SolidusDigital
   module Spree
     module OrderDecorator
-      def self.prepended(base)
-        base.state_machine.after_transition to: :complete, do: :generate_digital_links, if: :some_digital?
-      end
-
       # all products are digital
       def digital?
         line_items.all?(&:digital?)
@@ -26,12 +22,6 @@ module SolidusDigital
 
       def reset_digital_links!
         digital_links.each(&:reset!)
-      end
-
-      private
-
-      def generate_digital_links
-        line_items.each { |li| li.create_digital_links if li.digital? }
       end
 
       ::Spree::Order.prepend self

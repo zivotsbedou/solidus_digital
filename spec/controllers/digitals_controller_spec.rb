@@ -4,51 +4,39 @@ require 'spec_helper'
 
 RSpec.describe Spree::DigitalsController, type: :controller do
   describe '#show' do
+    let(:order) { create(:order_ready_to_ship, line_items_attributes: [{ variant: digital.variant }]) }
     let(:digital) { create(:digital) }
-    let(:digital_link) { create(:digital_link, digital: digital) }
+    let(:link) { create(:digital_link, digital: digital, line_item: order.line_items.first) }
 
-    it 'returns a 404 for a non-existent secret' do
-      get :show, params: { secret: 'NotReal00000000000000000000000' }
-      expect(response.status).to eq(404)
+    it 'raises not found for an unknown secret' do
+      expect { get :show, params: { secret: 'NotReal00000000000000000000000' } }.to raise_error(ActiveRecord::RecordNotFound)
     end
 
-    context 'unauthorized' do
-      it 'returns a 200 and calls send_file for link that is not a file' do
-        expect(digital_link).not_to receive(:cloud?)
-        expect(controller).not_to receive(:send_file)
+    it 'sends the file and counts the download' do
+      get :show, params: { secret: link.secret }
 
-        get :show, params: { secret: digital_link.secret }
-        expect(response.status).to eq(200)
-        expect(response).to render_template(:unauthorized)
-      end
+      expect(response.body).to eq('digital content')
+      expect(response.headers['Content-Disposition']).to start_with("attachment; filename=\"#{digital.attachment.filename}\"")
+      expect(response.headers['Cache-Control']).to include('no-store')
+      expect(link.reload.access_counter).to eq(1)
     end
 
-    context 'authorized' do
-      before { allow(controller).to receive(:authorize_digital_link).and_return(true) }
+    it 'refuses links of unpaid orders' do
+      stub_spree_preferences(layout: 'application')
+      order.update!(payment_state: 'balance_due')
+      get :show, params: { secret: link.secret }
 
-      it 'returns a 200 and calls send_file that is a file' do
-        expect(controller)
-          .to receive(:send_file)
-            .with(
-              digital.attachment.path,
-              filename: digital.attachment.original_filename,
-              type: digital.attachment.content_type
-            ){ controller.render body: nil, content_type: digital.attachment.content_type }
+      expect(response).to have_http_status(:forbidden)
+      expect(response).to render_template(:unauthorized)
+    end
 
-        get :show, params: { secret: digital_link.secret }
-        expect(response.status).to eq(200)
-        expect(response.header['Content-Type']).to match digital.attachment.content_type
-      end
+    context 'with a protected PDF' do
+      let(:digital) { create(:digital, :drm) }
 
-      it 'redirects to s3 when using s3' do
-        skip 'TODO: needs a way to test without having a bucket'
-        Paperclip::Attachment.default_options[:storage] = :s3
+      it 'sends the buyer copy with its license page' do
+        get :show, params: { secret: link.secret }
 
-        expect(controller).to receive(:redirect_to)
-        expect(controller).to receive(:attachment_is_file?).and_return(true)
-        expect(controller).not_to receive(:send_file)
-
-        get :show, params: { secret: digital_link.secret }
+        expect(SolidusDigital::TestingSupport.pdf_pages(response.body).second).to include("Licensed to: #{order.email}")
       end
     end
   end
