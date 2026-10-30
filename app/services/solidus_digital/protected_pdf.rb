@@ -32,11 +32,19 @@ module SolidusDigital
     private
 
     def page_size(path, object)
-      page = JSON.parse(qpdf("--json=2", "--json-key=qpdf", "--json-object=#{object}", path)).dig("qpdf", 1).values.first["value"]
-      # shortcut: page boxes inherited from the page tree fall back to A4; read the parent if a file needs it.
-      x0, y0, x1, y1 = page["/CropBox"] || page["/MediaBox"] || [0, 0, *PDF::Core::PageGeometry::SIZES["A4"]]
+      attributes = {}
+      visited = []
+      while object
+        raise Error, "Circular PDF page tree" if visited.include?(object)
+
+        visited << object
+        page = JSON.parse(qpdf("--json=2", "--json-key=qpdf", "--json-object=#{object}", path)).dig("qpdf", 1).values.first.fetch("value")
+        attributes = page.slice("/CropBox", "/MediaBox", "/Rotate").merge(attributes)
+        object = page["/Parent"]
+      end
+      x0, y0, x1, y1 = attributes["/CropBox"] || attributes.fetch("/MediaBox")
       size = [x1 - x0, y1 - y0]
-      (page["/Rotate"].to_i % 180).zero? ? size : size.reverse
+      (attributes["/Rotate"].to_i % 180).zero? ? size : size.reverse
     end
 
     def license_page(width, height)

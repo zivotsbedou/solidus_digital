@@ -60,6 +60,12 @@ since the e-mail contains absolute download URLs.
 - Files move from Paperclip to Active Storage. After migrating, run
   `bin/rails solidus_digital:migrate_paperclip_files` to attach the files under
   `private/digitals`. The Paperclip columns stay until a later release.
+  For S3 or another remote Paperclip store, download the original objects before
+  upgrading and stage them as `STAGING_DIRECTORY/:digital_id/:attachment_file_name`.
+  Run `PAPERCLIP_FILES_ROOT=/absolute/STAGING_DIRECTORY bin/rails solidus_digital:migrate_paperclip_files`.
+  Keep the old store available until every attachment is verified. The task exits
+  unsuccessfully if any source file is missing; staging the missing files and
+  rerunning it skips attachments already migrated.
 - The "Digital Delivery" calculator and the digital stock splitter are gone.
   Move shipping methods that use the calculator to a flat rate before
   upgrading.
