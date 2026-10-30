@@ -3,6 +3,8 @@
 require "spec_helper"
 
 RSpec.describe Spree::DigitalsController, type: :controller do
+  include ActiveSupport::Testing::TimeHelpers
+
   describe "#show" do
     let(:order) { create(:order_ready_to_ship, line_items_attributes: [{variant: digital.variant}]) }
     let(:digital) { create(:digital) }
@@ -35,6 +37,17 @@ RSpec.describe Spree::DigitalsController, type: :controller do
       expect(response).to render_template(:resent, layout: false)
       expect(link.reload.access_counter).to eq(0)
       expect(link).not_to be_expired
+    end
+
+    it "sends at most one e-mail per link within ten minutes" do
+      store = ActiveSupport::Cache::MemoryStore.new
+      allow(described_class.cache_store).to receive(:increment) { |*args, **options| store.increment(*args, **options) }
+
+      expect { post :resend, params: {secret: link.secret} }.to have_enqueued_mail(Spree::DigitalMailer, :download_links_email)
+      expect { post :resend, params: {secret: link.secret} }.not_to have_enqueued_mail(Spree::DigitalMailer, :download_links_email)
+      travel 11.minutes do
+        expect { post :resend, params: {secret: link.secret} }.to have_enqueued_mail(Spree::DigitalMailer, :download_links_email)
+      end
     end
 
     it "sends no links for unpaid orders" do
