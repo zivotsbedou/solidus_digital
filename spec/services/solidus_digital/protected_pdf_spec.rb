@@ -7,7 +7,9 @@ RSpec.describe SolidusDigital::ProtectedPdf do
   let(:order) { create(:order_ready_to_ship, line_items_attributes: [{variant: digital.variant}]) }
 
   it "inserts the license page after the cover and allows printing only" do
-    pdf = described_class.new(digital.attachment, order.line_items.first).call
+    output = Tempfile.new(["protected", ".pdf"])
+    described_class.new(digital.attachment, order.line_items.first).call(output.path)
+    pdf = File.binread(output.path)
 
     expect(SolidusDigital::TestingSupport.pdf_pages(pdf)).to match([
       include("Cover"),

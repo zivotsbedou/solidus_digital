@@ -3,9 +3,10 @@
 require "open3"
 
 module SolidusDigital
-  # Builds the buyer's copy of a PDF: a license page after the cover with the
+  # Writes the buyer's copy of a PDF: a license page after the cover with the
   # order's e-mail and number, then AES-256 encryption that only allows printing.
-  # Requires the qpdf command line tool.
+  # Requires the qpdf command line tool. Replace it with
+  # SolidusDigital.config.protected_pdf_class.
   class ProtectedPdf
     Error = Class.new(StandardError)
 
@@ -14,18 +15,16 @@ module SolidusDigital
       @order = line_item.order
     end
 
-    def call
+    def call(output)
       Dir.mktmpdir do |dir|
         @attachment.blob.open(tmpdir: dir) do |source|
           pages = JSON.parse(qpdf("--json=2", "--json-key=pages", source.path)).fetch("pages")
           license = File.join(dir, "license.pdf")
-          output = File.join(dir, "protected.pdf")
           File.binwrite(license, license_page(*page_size(source.path, pages.first.fetch("object"))))
           rest = (pages.size > 1) ? [".", "2-z"] : []
           qpdf source.path, "--pages", ".", "1", license, "1", *rest, "--",
             "--encrypt", "", SecureRandom.hex(16), "256", "--print=full", "--modify=none", "--extract=n", "--annotate=n", "--",
             output
-          File.binread(output)
         end
       end
     end
@@ -52,10 +51,10 @@ module SolidusDigital
     end
 
     def use_font(pdf)
-      normal = ::Spree::DigitalConfiguration[:license_font]
-      return if normal.blank?
+      fonts = SolidusDigital.config.license_fonts.to_h.symbolize_keys.transform_values(&:to_s)
+      return if fonts[:normal].blank?
 
-      pdf.font_families.update("License" => {normal: normal, bold: ::Spree::DigitalConfiguration[:license_bold_font].presence || normal})
+      pdf.font_families.update("License" => {bold: fonts[:normal]}.merge(fonts))
       pdf.font "License"
     end
 

@@ -1,8 +1,5 @@
 # frozen_string_literal: true
 
-require "solidus_core"
-require "solidus_support"
-
 module SolidusDigital
   class Engine < Rails::Engine
     include SolidusSupport::EngineExtensions
@@ -15,20 +12,11 @@ module SolidusDigital
       app.autoloaders.main.ignore(root.join("app/overrides"))
     end
 
-    initializer "solidus_digital.preferences", before: "spree.environment" do |_app|
-      ::Spree::DigitalConfiguration = ::Spree::SpreeDigitalConfiguration.new
-    end
-
-    initializer "solidus_digital.digital_shipping", after: "spree.environment" do |app|
-      app.config.spree.calculators.shipping_methods << "Spree::Calculator::Shipping::DigitalDelivery"
-    end
-
-    initializer "solidus_digital.digital_splitter", after: "spree.environment" do |app|
-      app.config.spree.stock_splitters << "Spree::Stock::Splitter::DigitalSplitter"
-    end
-
-    initializer "solidus_digital.subscribers", after: "spree.environment" do |app|
-      app.config.spree.subscribers << "SolidusDigital::DeliverySubscriber"
+    initializer "solidus_digital.pub_sub", after: "spree.core.pub_sub" do |app|
+      app.reloader.to_prepare do
+        Spree::Bus.register(:digital_links_created)
+        SolidusDigital::DeliverySubscriber.new.subscribe_to(Spree::Bus)
+      end
     end
 
     # use rspec for tests

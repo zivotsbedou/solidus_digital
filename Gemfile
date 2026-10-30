@@ -3,7 +3,10 @@
 source "https://rubygems.org"
 git_source(:github) { |repo| "https://github.com/#{repo}.git" }
 
-gem "solidus", ENV.fetch("SOLIDUS_VERSION", "~> 4.8")
+# solidusio/test-solidus-extension sets these for each matrix entry.
+branch = ENV.fetch("SOLIDUS_BRANCH", "v4.8")
+gem "solidus", github: "solidusio/solidus", branch: branch
+gem "rails", "~> #{ENV.fetch("RAILS_VERSION", "8.1")}"
 
 # Provides basic authentication functionality for testing parts of your engine
 gem "solidus_auth_devise"
@@ -14,7 +17,7 @@ when "mysql"
 when "postgresql"
   gem "pg"
 else
-  gem "sqlite3", ">= 2.1"
+  gem "sqlite3", "~> 2.0"
 end
 
 gem "rails-controller-testing"

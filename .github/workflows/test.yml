@@ -1,0 +1,52 @@
+name: Test
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+  schedule:
+    - cron: "0 0 * * 4" # every Thursday
+
+concurrency:
+  group: test-${{ github.ref_name }}
+  cancel-in-progress: ${{ github.ref_name != 'main' }}
+
+permissions:
+  contents: read
+
+jobs:
+  # The reusable solidusio/test-solidus-extension workflow cannot install qpdf, so this job runs its action.
+  rspec:
+    name: Solidus ${{ matrix.solidus-branch }}, Rails ${{ matrix.rails-version }} and Ruby ${{ matrix.ruby-version }} on ${{ matrix.database }}
+    runs-on: ubuntu-24.04
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_HOST_AUTH_METHOD: trust
+        options: >-
+          --health-cmd="pg_isready"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=5
+        ports:
+          - 5432:5432
+    strategy:
+      fail-fast: false
+      matrix:
+        rails-version: ["8.0", "8.1"]
+        ruby-version: ["3.4", "4.0"]
+        solidus-branch: ["v4.8"]
+        database: ["postgresql", "sqlite"]
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install qpdf
+        run: sudo apt-get update && sudo apt-get install -y --no-install-recommends qpdf
+      - name: Run extension tests
+        uses: solidusio/test-solidus-extension@v1
+        with:
+          ruby-version: ${{ matrix.ruby-version }}
+          rails-version: ${{ matrix.rails-version }}
+          solidus-branch: ${{ matrix.solidus-branch }}
+          database: ${{ matrix.database }}

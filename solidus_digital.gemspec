@@ -27,9 +27,10 @@ Gem::Specification.new do |spec|
   spec.executables = spec.files.grep(%r{^exe/}) { |f| File.basename(f) }
   spec.require_paths = ["lib"]
 
+  spec.add_dependency "deface", "~> 1.9"
   spec.add_dependency "prawn", "~> 2.5"
   spec.add_dependency "solidus_core", [">= 4.8", "< 5"]
-  spec.add_dependency "solidus_support", ">= 0.12"
+  spec.add_dependency "solidus_support", [">= 0.14.1", "< 1"]
 
   spec.add_development_dependency "pdf-reader"
   spec.add_development_dependency "rspec-activemodel-mocks"

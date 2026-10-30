@@ -22,15 +22,4 @@ FactoryBot.define do
     f.digital { |p| p.association(:digital) }
     f.line_item { |p| p.association(:line_item) }
   end
-
-  factory :digital_shipping_calculator, class: Spree::Calculator::Shipping::DigitalDelivery do
-    after :create do |c|
-      c.set_preference(:amount, 0)
-    end
-  end
-
-  factory :digital_shipping_method, parent: :shipping_method do
-    name { "Digital Delivery" }
-    calculator { FactoryBot.build :digital_shipping_calculator }
-  end
 end

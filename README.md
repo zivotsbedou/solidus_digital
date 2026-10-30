@@ -7,17 +7,24 @@ Storage.
 ## How it works
 
 Attach one or more files to a product's master variant or to any variant in
-the admin's "Digital Versions" tab. When a captured payment makes an order
-paid, the extension creates download links for each digital line item,
-e-mails them with `Spree::DigitalMailer#download_links` and ships the
-shipments that hold only digital items, without the stock "shipped" e-mail.
-Orders paid later, by bank transfer or a manual capture in the admin, get
-their links at that moment. An unpaid order never gets links.
+the "Digital Versions" tab of the legacy admin (`solidus_backend`;
+`solidus_admin` edits products only with its alpha features on). When an
+order is paid, the extension creates download links for each digital line
+item, publishes the `digital_links_created` event, e-mails the links with
+`Spree::DigitalMailer#download_links_email` and ships the shipments that hold
+only digital items, without the stock "shipped" e-mail. Orders paid at
+checkout get their links when checkout completes; orders paid later, by bank
+transfer or a manual capture in the admin, when the capture makes them paid.
+Unpaid orders never get links. With `Spree::Config.send_core_emails` turned
+off, the extension only publishes the event and leaves the e-mail and the
+shipments to the store.
 
-A link works while its order stays paid, for `authorized_days` after it was
-created and for `authorized_clicks` downloads. Staff can reset the counters
-and send the e-mail again from the order's "Reset and resend digital
-downloads" link.
+A link works while its order can ship and stays paid, for `authorized_days`
+after it was created and for `authorized_clicks` downloads. A download
+redirects to a short-lived Active Storage URL. Staff can reset the counters
+and e-mail the links again with the order's "Reset and resend digital
+downloads" link. A refused link shows the standalone
+`spree/digitals/unauthorized` page; override it to match your store.
 
 ### Protected PDFs
 
@@ -27,8 +34,8 @@ AES-256 encryption that allows printing and blocks copying and editing. The
 copy is built on every download, so nothing is stored per order. It needs the
 [qpdf](https://qpdf.sourceforge.io/) command on the server, for example
 `apt-get install qpdf`. Prawn renders the license page; its built-in font only
-covers Western European characters, so set `license_font` and
-`license_bold_font` to TrueType files for other languages.
+covers Western European characters, so set `license_fonts` for other
+languages, or replace `protected_pdf_class`.
 
 ## Installation
 
@@ -40,41 +47,53 @@ gem 'solidus_digital', github: 'zivotsbedou/solidus_digital'
 bin/rails generate solidus_digital:install
 ```
 
-The generator copies the migrations and runs them. Upgrading from the
-Paperclip versions removes the Paperclip columns; upload the files again.
+The generator adds `config/initializers/solidus_digital.rb`, copies the
+migrations and runs them. Configure `action_mailer.default_url_options`,
+since the e-mail contains absolute download URLs.
 
-Configure `action_mailer.default_url_options`, since the e-mail contains
-absolute download URLs.
+### Upgrading from 1.x
+
+- Files move from Paperclip to Active Storage. After migrating, run
+  `bin/rails solidus_digital:migrate_paperclip_files` to attach the files under
+  `private/digitals`. The Paperclip columns stay until a later release.
+- The "Digital Delivery" calculator and the digital stock splitter are gone.
+  Move shipping methods that use the calculator to a flat rate before
+  upgrading.
+- Configure the extension with `SolidusDigital.configure`;
+  `Spree::DigitalConfiguration` still works but is deprecated.
+- The `Spree::Order` helpers and the confirmation e-mail override are gone; the
+  links arrive in their own e-mail once the order is paid.
 
 ## Shipping
 
-Create a shipping method with the "Digital Delivery" calculator, or limit any
-shipping method to the shipping category of your digital products, so
-customers do not pick a carrier for them. `Spree::Stock::Splitter::DigitalSplitter`
-puts digital items in their own package.
+Give digital products their own shipping category and a shipping method, for
+example a free flat rate, limited to that category. Solidus then puts digital
+items in their own shipment, which the extension ships after the e-mail, and
+customers do not pick a carrier for them.
 
 ## Configuration
 
-`Spree::DigitalConfiguration` holds the preferences:
+```ruby
+# config/initializers/solidus_digital.rb
+SolidusDigital.configure do |config|
+  config.authorized_days = 30
+  config.authorized_clicks = 5
+end
+```
 
-| Preference | Default | Meaning |
+| Setting | Default | Meaning |
 | --- | --- | --- |
 | `authorized_clicks` | `3` | Downloads per link; `nil` means unlimited. |
 | `authorized_days` | `2` | Days a link works after it was created. |
-| `digital_links_count` | `'quantity'` | Links per line item: its quantity or a fixed number. |
-| `keep_digitals` | `false` | Keep files when their variant is deleted. |
-| `license_font`, `license_bold_font` | `nil` | TrueType fonts for the license page of protected PDFs. |
-
-```ruby
-# config/initializers/solidus_digital.rb
-Spree::DigitalConfiguration.authorized_days = 30
-Spree::DigitalConfiguration.authorized_clicks = 5
-```
+| `digital_links_count` | `"quantity"` | Links per line item: its quantity or a fixed number. |
+| `keep_digitals` | `false` | Keep files when their variant is discarded. |
+| `license_fonts` | `{}` | Prawn font family for the license page, e.g. `{normal: "Regular.ttf", bold: "Bold.ttf"}`. |
+| `mailer_class` | `"Spree::DigitalMailer"` | Mailer with `download_links_email(order)`. |
+| `protected_pdf_class` | `"SolidusDigital::ProtectedPdf"` | Builds protected copies: `new(attachment, line_item).call(output_path)`. |
 
 Override the views under `app/views/spree/digital_mailer/` and
 `app/views/spree/digitals/` and the `spree.digitals` and
-`spree.digital_mailer` translations to adapt the copy. The download controller
-uses `Spree::Config.layout`.
+`spree.digital_mailer` translations to adapt the copy.
 
 ## Development
 

@@ -12,22 +12,20 @@ RSpec.describe Spree::DigitalsController, type: :controller do
       expect { get :show, params: {secret: "NotReal00000000000000000000000"} }.to raise_error(ActiveRecord::RecordNotFound)
     end
 
-    it "sends the file and counts the download" do
+    it "counts the download and redirects to a short-lived file URL" do
       get :show, params: {secret: link.secret}
 
-      expect(response.body).to eq("digital content")
-      expect(response.headers["Content-Disposition"]).to start_with("attachment; filename=\"#{digital.attachment.filename}\"")
+      expect(response).to redirect_to(%r{/rails/active_storage/disk/.+/#{digital.attachment.filename}})
       expect(response.headers["Cache-Control"]).to include("no-store")
       expect(link.reload.access_counter).to eq(1)
     end
 
-    it "refuses links of unpaid orders" do
-      stub_spree_preferences(layout: "application")
+    it "refuses links of unpaid orders on a standalone page" do
       order.update!(payment_state: "balance_due")
       get :show, params: {secret: link.secret}
 
       expect(response).to have_http_status(:forbidden)
-      expect(response).to render_template(:unauthorized)
+      expect(response).to render_template(:unauthorized, layout: false)
     end
 
     context "with a protected PDF" do
@@ -36,7 +34,8 @@ RSpec.describe Spree::DigitalsController, type: :controller do
       it "sends the buyer copy with its license page" do
         get :show, params: {secret: link.secret}
 
-        expect(SolidusDigital::TestingSupport.pdf_pages(response.body).second).to include("Licensed to: #{order.email}")
+        expect(response.headers["Content-Disposition"]).to start_with('attachment; filename="book.pdf"')
+        expect(SolidusDigital::TestingSupport.pdf_pages(File.binread(response.stream.to_path)).second).to include("Licensed to: #{order.email}")
       end
     end
   end

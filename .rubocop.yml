@@ -4,3 +4,4 @@ require:
 
 AllCops:
   NewCops: disable
+  TargetRubyVersion: 3.2

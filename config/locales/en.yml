@@ -11,7 +11,7 @@ en:
               pdf_only: needs a PDF file
   spree:
     digital_mailer:
-      download_links:
+      download_links_email:
         subject: "%{store}: downloads for order %{number}"
         instructions: Thank you for your payment for order %{number}. Download your files below.
         download: Download %{filename}
@@ -23,7 +23,6 @@ en:
       delete_file: Delete this file
       delete_file_confirmation: Are you sure you want to delete the file %{filename}?
       digitals: Digitals
-      digital_delivery: Digital Delivery
       digital_versions: Digital Versions
       downloads_reset: Digital downloads were reset and the links e-mailed again
       files: Files

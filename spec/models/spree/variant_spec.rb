@@ -9,27 +9,25 @@ RSpec.describe Spree::Variant do
 
     it "destroys associated digitals by default" do
       # default is false
-      stub_spree_preferences(Spree::DigitalConfiguration, keep_digitals: false)
+      stub_spree_preferences(SolidusDigital.config, keep_digitals: false)
 
       expect(Spree::Digital.count).to eq(1)
       expect(variant.digitals.present?).to be true
 
-      variant.deleted_at = Time.zone.now
+      variant.discard
       expect(variant.deleted?).to be true
-      variant.save!
 
       expect { digital.reload.present? }.to raise_error(ActiveRecord::RecordNotFound)
       expect(Spree::Digital.count).to eq(0)
     end
 
     it "conditionallies keep associated digitals" do
-      stub_spree_preferences(Spree::DigitalConfiguration, keep_digitals: true)
+      stub_spree_preferences(SolidusDigital.config, keep_digitals: true)
 
       expect(Spree::Digital.count).to eq(1)
       expect(variant.digitals.present?).to be true
 
-      variant.deleted_at = Time.zone.now
-      variant.save!
+      variant.discard
       expect(variant.deleted?).to be true
       expect { digital.reload.present? }.not_to raise_error
       expect(Spree::Digital.count).to eq(1)

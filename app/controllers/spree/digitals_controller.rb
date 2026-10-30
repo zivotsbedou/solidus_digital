@@ -4,12 +4,17 @@ module Spree
   class DigitalsController < Spree::BaseController
     def show
       link = DigitalLink.find_by!(secret: params[:secret])
-      return render :unauthorized, status: :forbidden unless link.authorize!
+      # A standalone error page: storefront layouts need the app's own controller helpers.
+      return render :unauthorized, status: :forbidden, layout: false unless link.authorize!
 
       attachment = link.attachment
-      data = link.digital.drm? ? SolidusDigital::ProtectedPdf.new(attachment, link.line_item).call : attachment.download
       response.headers["Cache-Control"] = "private, no-store"
-      send_data data, filename: attachment.filename.to_s, type: attachment.content_type, disposition: "attachment"
+      return redirect_to attachment.url(disposition: :attachment), allow_other_host: true unless link.digital.drm?
+
+      # The controller lives until the response is sent, so the file outlives send_file.
+      @protected_pdf = Tempfile.new(["protected", ".pdf"], binmode: true)
+      SolidusDigital.config.protected_pdf_class.new(attachment, link.line_item).call(@protected_pdf.path)
+      send_file @protected_pdf.path, filename: attachment.filename.to_s, type: attachment.content_type, disposition: "attachment"
     end
   end
 end

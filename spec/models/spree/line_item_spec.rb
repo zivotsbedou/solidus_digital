@@ -19,12 +19,12 @@ RSpec.describe Spree::LineItem do
     end
   end
 
-  describe "#create_digital_links" do
+  describe "creating digital links" do
     let(:line_item) { create(:line_item, order: order, variant: digital_variant) }
 
     it "keeps links that were already created" do
-      line_item.create_digital_links
-      expect { line_item.create_digital_links }.not_to change { line_item.digital_links.reload.pluck(:secret) }
+      Spree::DigitalLinksCreator.new(line_item).create_digital_links
+      expect { Spree::DigitalLinksCreator.new(line_item).create_digital_links }.not_to change { line_item.digital_links.reload.pluck(:secret) }
     end
 
     context "digital links" do
@@ -35,31 +35,31 @@ RSpec.describe Spree::LineItem do
         line_item.save
       end
 
-      after { stub_spree_preferences(Spree::DigitalConfiguration, digital_links_count: "quantity") }
+      after { stub_spree_preferences(SolidusDigital.config, digital_links_count: "quantity") }
 
       context "when :digital_links_count settings set to 'quantity' (default)" do
         it "generates quantity x count digital links " do
-          line_item.create_digital_links
+          Spree::DigitalLinksCreator.new(line_item).create_digital_links
 
           expect(digital.digital_links.count).to eq(8)
         end
       end
 
       context "when :digital_links_count settings set to '1'" do
-        before { stub_spree_preferences(Spree::DigitalConfiguration, digital_links_count: "1") }
+        before { stub_spree_preferences(SolidusDigital.config, digital_links_count: "1") }
 
         it "generates quantity x count digital links " do
-          line_item.create_digital_links
+          Spree::DigitalLinksCreator.new(line_item).create_digital_links
 
           expect(digital.digital_links.count).to eq(1)
         end
       end
 
       context "when :digital_links_count settings set to '-1'" do
-        before { stub_spree_preferences(Spree::DigitalConfiguration, digital_links_count: "-1") }
+        before { stub_spree_preferences(SolidusDigital.config, digital_links_count: "-1") }
 
         it "generates quantity x count digital links " do
-          line_item.create_digital_links
+          Spree::DigitalLinksCreator.new(line_item).create_digital_links
 
           expect(digital.digital_links.count).to eq(1)
         end
@@ -70,7 +70,7 @@ RSpec.describe Spree::LineItem do
   describe "#destroy" do
     it "destroys associated links when destroyed" do
       line_item = create(:line_item, order: order, variant: digital_variant)
-      line_item.create_digital_links
+      Spree::DigitalLinksCreator.new(line_item).create_digital_links
       links = line_item.digital_links
 
       expect(links.to_a.size).to eq(1)
