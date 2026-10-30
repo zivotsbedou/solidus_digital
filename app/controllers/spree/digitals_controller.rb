@@ -2,36 +2,47 @@
 
 module Spree
   class DigitalsController < Spree::BaseController
-    rescue_from ActiveRecord::RecordNotFound, with: :resource_not_found
-    before_action :authorize_digital_link, only: :show
+    before_action :load_link
+    # Buyers can ask for fresh links themselves; the e-mail only goes to the order's address.
+    rate_limit to: 1, within: 10.minutes, by: -> { params[:secret] }, with: :render_resent, only: :resend
+
+    helper_method :masked_email
 
     def show
-      if digital_link.cloud?
-        redirect_to attachment.expiring_url(Spree::DigitalConfiguration[:s3_expiration_seconds])
-      else
-        send_file attachment.path, filename: attachment.original_filename, type: attachment.content_type
-      end
+      # Standalone pages: storefront layouts need the app's own controller helpers.
+      return render :unauthorized, status: :forbidden, layout: false unless @link.authorize!
+
+      attachment = @link.attachment
+      disposition = SolidusDigital.config.disposition
+      response.headers["Cache-Control"] = "private, no-store"
+      return redirect_to attachment.url(disposition:), allow_other_host: true unless @link.digital.drm?
+
+      # The controller lives until the response is sent, so the file outlives send_file.
+      @protected_pdf = Tempfile.new(["protected", ".pdf"], binmode: true)
+      SolidusDigital.config.protected_pdf_class.new(attachment, @link.line_item).call(@protected_pdf.path)
+      send_file @protected_pdf.path, filename: attachment.filename.to_s, type: attachment.content_type, disposition:
+    end
+
+    def resend
+      return render :unauthorized, status: :forbidden, layout: false unless @link.resendable?
+
+      DigitalLink.resend(@link.line_item.order)
+      render_resent
     end
 
     private
 
-    def authorize_digital_link
-      # don't authorize the link unless the file exists
-      raise ActiveRecord::RecordNotFound if attachment.blank?
-
-      render :unauthorized unless digital_link.file_exists? && digital_link.authorize!
+    def load_link
+      @link = DigitalLink.find_by!(secret: params[:secret])
     end
 
-    def digital_link
-      @link ||= DigitalLink.find_by!(secret: params[:secret])
+    def render_resent
+      render :resent, layout: false
     end
 
-    def attachment
-      @attachment ||= digital_link.attachment
-    end
-
-    def resource_not_found
-      render body: nil, status: :not_found
+    # Shows where the links went without revealing the address to whoever holds the link.
+    def masked_email
+      @link.line_item.order.email.sub(/\A(.)[^@]*/, '\1***')
     end
   end
 end

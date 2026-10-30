@@ -1,0 +1,10 @@
+<%= t('.instructions', number: @order.number) %>
+<% @line_items.each do |item| %>
+
+<%= item.variant.descriptive_name %>
+<% item.digital_links.each do |link| %>
+  <%= spree.digital_url(secret: link.secret) %>
+<% end %>
+<% end %>
+
+<%= t('.limits', count: SolidusDigital.config.authorized_days) %>

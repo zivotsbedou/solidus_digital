@@ -1,8 +1,6 @@
 <!-- insert_bottom "[data-hook='admin_order_tabs']" -->
-<% if can?(:update, @order) && @order.digital? %>
+<% if can?(:update, @order) && @order.line_items.any?(&:digital?) %>
   <li>
-  <%= link_to I18n.t('spree.digitals.reset_downloads'), reset_digitals_admin_order_url(@order) %>
+  <%= link_to I18n.t('spree.digitals.reset_downloads'), spree.reset_admin_order_digital_links_path(@order), method: :post %>
   </li>
 <% end %>
-
-<!-- enabled -->

@@ -1,9 +1,15 @@
-<% if defined?(SpreeFancy) %>
-  <% content_for :subheader do %>
+<!DOCTYPE html>
+<html lang="<%= I18n.locale %>">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title><%= I18n.t('spree.digitals.unauthorized.unauthorized') %></title>
+  </head>
+  <body>
     <h1><%= I18n.t('spree.digitals.unauthorized.unauthorized') %></h1>
-  <% end %>
-<% else %>
-  <h1><%= I18n.t('spree.digitals.unauthorized.unauthorized') %></h1>
-<% end %>
-
-<%= I18n.t('spree.digitals.unauthorized.explained') %>
+    <p><%= I18n.t('spree.digitals.unauthorized.explained') %></p>
+    <% if @link&.resendable? %>
+      <%= button_to I18n.t('spree.digitals.unauthorized.resend'), spree.resend_digital_path(secret: @link.secret) %>
+    <% end %>
+  </body>
+</html>

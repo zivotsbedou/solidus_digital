@@ -9,8 +9,9 @@ class Spree::DigitalLinksCreator
     @line_item = line_item
   end
 
+  # Links that were already e-mailed stay valid, so they are created only once.
   def create_digital_links
-    digital_links.delete_all
+    return if digital_links.any?
 
     # include master variant digitals
     master = variant.product.master
@@ -22,13 +23,12 @@ class Spree::DigitalLinksCreator
 
   def create_digital_links_for_variant(variant)
     variant.digitals.each do |digital|
-      digital.create_drm_record(line_item) if digital.drm?
       digital_links_count.times { digital_links.create!(digital: digital) }
     end
   end
 
   def digital_links_count
-    count = Spree::DigitalConfiguration[:digital_links_count]
-    count == 'quantity' ? quantity : Integer(count).abs
+    count = SolidusDigital.config.digital_links_count
+    (count == "quantity") ? quantity : Integer(count).abs
   end
 end
