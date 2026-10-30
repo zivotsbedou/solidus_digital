@@ -1,0 +1,12 @@
+<!DOCTYPE html>
+<html lang="<%= I18n.locale %>">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title><%= I18n.t('spree.digitals.resent.title') %></title>
+  </head>
+  <body>
+    <h1><%= I18n.t('spree.digitals.resent.title') %></h1>
+    <p><%= I18n.t('spree.digitals.resent.explained', email: masked_email) %></p>
+  </body>
+</html>

@@ -8,10 +8,7 @@ module Spree
       # Gives the buyer fresh download limits and e-mails the links again.
       def reset
         authorize! :update, @order
-        Spree::OrderMutex.with_lock!(@order) do
-          Spree::DigitalLink.joins(:line_item).where(spree_line_items: {order_id: @order.id}).find_each(&:reset!)
-        end
-        SolidusDigital.config.mailer_class.download_links_email(@order).deliver_later
+        Spree::OrderMutex.with_lock!(@order) { Spree::DigitalLink.resend(@order) }
         flash[:success] = t("spree.digitals.downloads_reset")
         redirect_to spree.edit_admin_order_path(@order)
       rescue Spree::OrderMutex::LockFailed

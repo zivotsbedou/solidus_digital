@@ -16,4 +16,5 @@ Spree::Core::Engine.routes.draw do
   end
 
   get "/digital/:secret", to: "digitals#show", as: :digital, constraints: {secret: /[a-zA-Z0-9]{30}/}
+  post "/digital/:secret/resend", to: "digitals#resend", as: :resend_digital, constraints: {secret: /[a-zA-Z0-9]{30}/}
 end

@@ -28,6 +28,22 @@ RSpec.describe Spree::DigitalsController, type: :controller do
       expect(response).to render_template(:unauthorized, layout: false)
     end
 
+    it "lets the buyer of a paid order get fresh links by e-mail" do
+      link.update_columns(access_counter: 3, created_at: 1.year.ago)
+
+      expect { post :resend, params: {secret: link.secret} }.to have_enqueued_mail(Spree::DigitalMailer, :download_links_email).with(order)
+      expect(response).to render_template(:resent, layout: false)
+      expect(link.reload.access_counter).to eq(0)
+      expect(link).not_to be_expired
+    end
+
+    it "sends no links for unpaid orders" do
+      order.update!(payment_state: "balance_due")
+
+      expect { post :resend, params: {secret: link.secret} }.not_to have_enqueued_mail(Spree::DigitalMailer, :download_links_email)
+      expect(response).to have_http_status(:forbidden)
+    end
+
     context "with a protected PDF" do
       let(:digital) { create(:digital, :drm) }
 
@@ -36,6 +52,13 @@ RSpec.describe Spree::DigitalsController, type: :controller do
 
         expect(response.headers["Content-Disposition"]).to start_with('attachment; filename="book.pdf"')
         expect(SolidusDigital::TestingSupport.pdf_pages(File.binread(response.stream.to_path)).second).to include("Licensed to: #{order.email}")
+      end
+
+      it "opens it in the browser when configured" do
+        stub_spree_preferences(SolidusDigital.config, disposition: "inline")
+        get :show, params: {secret: link.secret}
+
+        expect(response.headers["Content-Disposition"]).to start_with('inline; filename="book.pdf"')
       end
     end
   end

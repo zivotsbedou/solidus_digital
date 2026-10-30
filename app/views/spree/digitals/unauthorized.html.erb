@@ -8,5 +8,8 @@
   <body>
     <h1><%= I18n.t('spree.digitals.unauthorized.unauthorized') %></h1>
     <p><%= I18n.t('spree.digitals.unauthorized.explained') %></p>
+    <% if @link&.resendable? %>
+      <%= button_to I18n.t('spree.digitals.unauthorized.resend'), spree.resend_digital_path(secret: @link.secret) %>
+    <% end %>
   </body>
 </html>

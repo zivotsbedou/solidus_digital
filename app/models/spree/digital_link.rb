@@ -13,10 +13,21 @@ module Spree
 
     delegate :attachment, to: :digital
 
-    # A link works while its order can ship and stays paid, within the configured days and downloads.
+    # Gives every link of the order a fresh period and download count, then e-mails them again.
+    def self.resend(order)
+      joins(:line_item).where(spree_line_items: {order_id: order.id}).find_each(&:reset!)
+      SolidusDigital.config.mailer_class.download_links_email(order).deliver_later
+    end
+
+    # A link works while its order entitles the buyer to it, within the configured days and downloads.
     def authorizable?
+      resendable? && attachment.attached? && !expired? && !access_limit_exceeded?
+    end
+
+    # The order can ship and stays paid, so the buyer may get fresh links.
+    def resendable?
       order = line_item.order
-      order.can_ship? && order.paid? && attachment.attached? && !expired? && !access_limit_exceeded?
+      order.can_ship? && order.paid?
     end
 
     def expired?

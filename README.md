@@ -21,10 +21,14 @@ shipments to the store.
 
 A link works while its order can ship and stays paid, for `authorized_days`
 after it was created and for `authorized_clicks` downloads. A download
-redirects to a short-lived Active Storage URL. Staff can reset the counters
-and e-mail the links again with the order's "Reset and resend digital
-downloads" link. A refused link shows the standalone
-`spree/digitals/unauthorized` page; override it to match your store.
+redirects to a short-lived Active Storage URL; set `disposition` to `"inline"`
+to open files in the browser instead of saving them. A refused link shows the
+standalone `spree/digitals/unauthorized` page, which offers buyers of paid
+orders a button to get fresh links: `POST /digital/:secret/resend` resets the
+order's links and e-mails them to the order's address, at most once per link
+every ten minutes, and the `spree/digitals/resent` page shows the masked
+address. Staff can do the same with the order's "Reset and resend digital
+downloads" link. Override both pages to match your store.
 
 ### Protected PDFs
 
@@ -87,6 +91,7 @@ end
 | `authorized_days` | `2` | Days a link works after it was created. |
 | `digital_links_count` | `"quantity"` | Links per line item: its quantity or a fixed number. |
 | `keep_digitals` | `false` | Keep files when their variant is discarded. |
+| `disposition` | `"attachment"` | `"inline"` opens downloads in the browser. |
 | `license_fonts` | `{}` | Prawn font family for the license page, e.g. `{normal: "Regular.ttf", bold: "Bold.ttf"}`. |
 | `mailer_class` | `"Spree::DigitalMailer"` | Mailer with `download_links_email(order)`. |
 | `protected_pdf_class` | `"SolidusDigital::ProtectedPdf"` | Builds protected copies: `new(attachment, line_item).call(output_path)`. |

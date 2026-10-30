@@ -33,9 +33,13 @@ en:
         order: "Order: %{number}"
       new_file: New File
       reset_downloads: Reset and resend digital downloads
+      resent:
+        title: New download links are on their way
+        explained: We sent them to %{email}. If they do not arrive, check your spam folder.
       unauthorized:
-        explained: This download link has expired.
-        unauthorized: Unauthorized
+        explained: This download link has expired or the order is no longer paid.
+        resend: Send me new links
+        unauthorized: This link no longer works
       upload: Upload
       file_name: File name
       product_no_variants: This product has no variants.

@@ -19,6 +19,9 @@ module SolidusDigital
     # covers Western European characters.
     preference :license_fonts, :hash, default: {}
 
+    # Open downloads in the browser ("inline") or save them as files ("attachment").
+    preference :disposition, :string, default: "attachment"
+
     class_name_attribute :mailer_class, default: "Spree::DigitalMailer"
     class_name_attribute :protected_pdf_class, default: "SolidusDigital::ProtectedPdf"
   end

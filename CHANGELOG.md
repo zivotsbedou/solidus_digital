@@ -33,7 +33,10 @@ Added:
 - The `digital_links_created` event, for stores that send their own e-mails.
 - Protected PDFs: a license page after the cover and print-only AES-256
   encryption, built per download with Prawn and qpdf.
-- `mailer_class`, `protected_pdf_class` and `license_fonts` settings.
+- Buyers of paid orders can get fresh links themselves from the page of an
+  expired link (`POST /digital/:secret/resend`, rate limited per link).
+- `mailer_class`, `protected_pdf_class`, `license_fonts` and `disposition`
+  settings.
 - GitHub Actions CI with solidusio/test-solidus-extension instead of CircleCI.
 
 See https://github.com/solidusio-contrib/solidus_digital/releases or OLD_CHANGELOG.md for older versions.
