@@ -1,9 +1,9 @@
 # frozen_string_literal: true
 
-require 'spec_helper'
+require "spec_helper"
 
 RSpec.describe Spree::DigitalLink do
-  context 'validation' do
+  context "validation" do
     it { is_expected.to belong_to(:digital) }
     it { is_expected.to belong_to(:line_item) }
   end
@@ -34,7 +34,7 @@ RSpec.describe Spree::DigitalLink do
     it "does not allow an empty or too short secret" do
       link = create(:digital_link)
       expect { link.update!(secret: nil) }.to raise_error(ActiveRecord::RecordInvalid)
-      expect { link.update!(secret: 'x' * 25) }.to raise_error(ActiveRecord::RecordInvalid)
+      expect { link.update!(secret: "x" * 25) }.to raise_error(ActiveRecord::RecordInvalid)
     end
   end
 
@@ -72,7 +72,7 @@ RSpec.describe Spree::DigitalLink do
     end
 
     it "is not #authorized? when the order is not paid" do
-      link.line_item.order.update!(payment_state: 'balance_due')
+      link.line_item.order.update!(payment_state: "balance_due")
       expect(link.authorizable?).to be false
     end
 
@@ -86,8 +86,8 @@ RSpec.describe Spree::DigitalLink do
     end
   end
 
-  describe '#reset!' do
-    it 'resets the access counter' do
+  describe "#reset!" do
+    it "resets the access counter" do
       link = create(:digital_link, line_item: create(:order_ready_to_ship).line_items.first)
       link.authorize!
       expect(link.access_counter).to eq(1)

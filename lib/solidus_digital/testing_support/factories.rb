@@ -3,13 +3,17 @@
 FactoryBot.define do
   factory :digital, class: Spree::Digital do |f|
     f.variant { |p| p.association(:variant) }
-    f.attachment { { io: StringIO.new('digital content'), filename: "#{SecureRandom.hex(5)}.epub", content_type: 'application/epub+zip' } }
+    f.attachment { {io: StringIO.new("digital content"), filename: "#{SecureRandom.hex(5)}.epub", content_type: "application/epub+zip"} }
 
     trait :drm do
       drm { true }
       attachment do
-        pdf = Prawn::Document.new { text 'Cover'; start_new_page; text 'Chapter 1' }
-        { io: StringIO.new(pdf.render), filename: 'book.pdf', content_type: 'application/pdf' }
+        pdf = Prawn::Document.new {
+          text "Cover"
+          start_new_page
+          text "Chapter 1"
+        }
+        {io: StringIO.new(pdf.render), filename: "book.pdf", content_type: "application/pdf"}
       end
     end
   end

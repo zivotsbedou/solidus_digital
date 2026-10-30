@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
-require 'spec_helper'
-require 'spree/testing_support/order_walkthrough'
+require "spec_helper"
+require "spree/testing_support/order_walkthrough"
 
 RSpec.describe Spree::LineItem do
   let(:order) { create(:order) }

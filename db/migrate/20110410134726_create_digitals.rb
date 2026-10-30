@@ -14,7 +14,7 @@ class CreateDigitals < ActiveRecord::Migration[4.2]
     create_table :digital_links, force: true do |t|
       t.integer :digital_id
       t.integer :line_item_id
-      t.string  :secret
+      t.string :secret
       t.integer :access_counter
       t.timestamps
     end

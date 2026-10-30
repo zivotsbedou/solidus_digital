@@ -6,7 +6,7 @@ module Spree
     belongs_to :line_item
 
     validates :digital, presence: true
-    validates :secret, length: { is: 30 }
+    validates :secret, length: {is: 30}
     before_validation :set_defaults, on: :create
 
     delegate :attachment, to: :digital
@@ -29,7 +29,7 @@ module Spree
     # This method should be called when a download is initiated.
     # It returns +true+ or +false+ depending on whether the authorization is granted.
     def authorize!
-      authorizable? && increment!(:access_counter) ? true : false
+      (authorizable? && increment!(:access_counter)) ? true : false
     end
 
     def reset!

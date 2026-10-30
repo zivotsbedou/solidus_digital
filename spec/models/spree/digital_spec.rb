@@ -1,9 +1,9 @@
 # frozen_string_literal: true
 
-require 'spec_helper'
+require "spec_helper"
 
 RSpec.describe Spree::Digital do
-  context 'validation' do
+  context "validation" do
     it { is_expected.to belong_to(:variant) }
   end
 

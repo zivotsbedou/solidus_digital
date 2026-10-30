@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
-require 'solidus_core'
-require 'solidus_support'
+require "solidus_core"
+require "solidus_support"
 
 module SolidusDigital
   class Engine < Rails::Engine
@@ -9,10 +9,10 @@ module SolidusDigital
 
     isolate_namespace ::Spree
 
-    engine_name 'solidus_digital'
+    engine_name "solidus_digital"
 
     initializer "solidus_digital.zeitwerk_ignore_deface_overrides", before: :eager_load! do |app|
-      app.autoloaders.main.ignore(root.join('app/overrides'))
+      app.autoloaders.main.ignore(root.join("app/overrides"))
     end
 
     initializer "solidus_digital.preferences", before: "spree.environment" do |_app|

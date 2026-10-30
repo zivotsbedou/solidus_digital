@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
-require 'spec_helper'
-require 'spree/testing_support/order_walkthrough'
+require "spec_helper"
+require "spree/testing_support/order_walkthrough"
 
 RSpec.describe Spree::Order do
   context "contents.add" do
@@ -51,7 +51,7 @@ RSpec.describe Spree::Order do
     end
   end
 
-  describe '#digital?/#some_digital?' do
+  describe "#digital?/#some_digital?" do
     let(:order) { create(:order) }
     let(:digital_order) {
       variants = 3.times.map { create(:variant, digitals: [create(:digital)]) }
@@ -72,23 +72,23 @@ RSpec.describe Spree::Order do
       order
     }
 
-    it 'returns true/true for a digital order' do
+    it "returns true/true for a digital order" do
       expect(digital_order).to be_digital
       expect(digital_order).to be_some_digital
     end
 
-    it 'returns false/true for a mixed order' do
+    it "returns false/true for a mixed order" do
       expect(mixed_order).not_to be_digital
       expect(mixed_order).to be_some_digital
     end
 
-    it 'returns false/false for an exclusively non-digital order' do
+    it "returns false/false for an exclusively non-digital order" do
       expect(non_digital_order).not_to be_digital
       expect(non_digital_order).not_to be_some_digital
     end
   end
 
-  describe '#digital_line_items' do
+  describe "#digital_line_items" do
     let(:order) { create(:order) }
     let(:digital_order_digitals) { 3.times.map { create(:digital) } }
     let(:digital_order) {
@@ -111,7 +111,7 @@ RSpec.describe Spree::Order do
       order
     }
 
-    it 'returns true/true for a digital order' do
+    it "returns true/true for a digital order" do
       digital_order_digital_line_items = digital_order.digital_line_items
       expect(digital_order_digital_line_items.size).to eq(digital_order_digitals.size)
 
@@ -120,7 +120,7 @@ RSpec.describe Spree::Order do
       digital_order_digitals.each { |d| expect(variants).to include(d.variant) }
     end
 
-    it 'returns false/true for a mixed order' do
+    it "returns false/true for a mixed order" do
       mixed_order_digital_line_items = mixed_order.digital_line_items
       expect(mixed_order_digital_line_items.size).to eq(mixed_order_digitals.size)
 
@@ -129,12 +129,12 @@ RSpec.describe Spree::Order do
       mixed_order_digitals.each { |d| expect(variants).to include(d.variant) }
     end
 
-    it 'returns an empty set for an exclusively non-digital order' do
+    it "returns an empty set for an exclusively non-digital order" do
       expect(non_digital_order.digital_line_items).to be_empty
     end
   end
 
-  describe '#digital_links' do
+  describe "#digital_links" do
     let(:mixed_order_digitals) { 2.times.map { create(:digital) } }
     let(:mixed_order) {
       order = create(:order)
@@ -144,7 +144,7 @@ RSpec.describe Spree::Order do
       order
     }
 
-    it 'correctly loads the links' do
+    it "correctly loads the links" do
       mixed_order_digital_links = mixed_order.digital_links
       links_from_digitals = mixed_order_digitals.map(&:reload).map(&:digital_links).flatten
       expect(mixed_order_digital_links.size).to eq(links_from_digitals.size)
@@ -155,17 +155,17 @@ RSpec.describe Spree::Order do
     end
   end
 
-  describe 'completing an unpaid order' do
+  describe "completing an unpaid order" do
     let(:digital_variant) { create(:variant, digitals: [create(:digital)]) }
-    let(:order) { create(:order_ready_to_complete, line_items_attributes: [{ variant: digital_variant, quantity: 8 }]) }
+    let(:order) { create(:order_ready_to_complete, line_items_attributes: [{variant: digital_variant, quantity: 8}]) }
 
-    it 'creates no download links before the payment is captured' do
+    it "creates no download links before the payment is captured" do
       order.complete!
       expect(order.digital_links).to be_empty
     end
   end
 
-  describe '#reset_digital_links!' do
+  describe "#reset_digital_links!" do
     let!(:order) { build(:order) }
     let!(:link_1) { double }
     let!(:link_2) { double }
@@ -176,7 +176,7 @@ RSpec.describe Spree::Order do
       expect(order).to receive(:digital_links).and_return([link_1, link_2])
     end
 
-    it 'calls reset on the links' do
+    it "calls reset on the links" do
       order.reset_digital_links!
     end
   end

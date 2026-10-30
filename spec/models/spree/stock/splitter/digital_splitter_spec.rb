@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-require 'spec_helper'
+require "spec_helper"
 
 module Spree
   module Stock
@@ -16,7 +16,7 @@ module Spree
 
         let(:stock_location) { mock_model(Spree::StockLocation) }
 
-        it 'splits each package by product' do
+        it "splits each package by product" do
           package1 = Package.new(stock_location)
           package1.add item1, :on_hand
           package1.add item2, :on_hand

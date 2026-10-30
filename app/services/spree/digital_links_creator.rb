@@ -29,6 +29,6 @@ class Spree::DigitalLinksCreator
 
   def digital_links_count
     count = Spree::DigitalConfiguration[:digital_links_count]
-    count == 'quantity' ? quantity : Integer(count).abs
+    (count == "quantity") ? quantity : Integer(count).abs
   end
 end

@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-require 'spec_helper'
+require "spec_helper"
 
 RSpec.describe Spree::Admin::OrdersController do
   context "with authorization" do
@@ -19,10 +19,10 @@ RSpec.describe Spree::Admin::OrdersController do
       request.env["HTTP_REFERER"] = "http://localhost:3000"
     end
 
-    describe '#reset_digitals' do
-      it 'resets digitals for an order' do
+    describe "#reset_digitals" do
+      it "resets digitals for an order" do
         expect do
-          get :reset_digitals, params: { id: order.number }
+          get :reset_digitals, params: {id: order.number}
           digital_link.reload
         end.to change(digital_link, :access_counter).to(0)
 

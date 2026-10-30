@@ -8,7 +8,7 @@ module SolidusDigital
           load_order
           @order.reset_digital_links!
           ::Spree::DigitalMailer.download_links(@order).deliver_later
-          flash[:notice] = I18n.t('spree.digitals.downloads_reset')
+          flash[:notice] = I18n.t("spree.digitals.downloads_reset")
           redirect_to spree.edit_admin_order_path(@order)
         end
 

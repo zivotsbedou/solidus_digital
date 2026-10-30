@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-require 'spree/preferences/configuration'
+require "spree/preferences/configuration"
 
 module Spree
   class SpreeDigitalConfiguration < Preferences::Configuration
@@ -23,6 +23,6 @@ module Spree
     # accepts: 'quantity' or Integer numbers
     # quantity - 'line_item.quantity' digital links will be generated
     # Integer 'number' - 'number' digital links will be generated
-    preference :digital_links_count, :string, default: 'quantity'
+    preference :digital_links_count, :string, default: "quantity"
   end
 end

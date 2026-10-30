@@ -8,8 +8,8 @@ module Spree
 
       attachment = link.attachment
       data = link.digital.drm? ? SolidusDigital::ProtectedPdf.new(attachment, link.line_item).call : attachment.download
-      response.headers['Cache-Control'] = 'private, no-store'
-      send_data data, filename: attachment.filename.to_s, type: attachment.content_type, disposition: 'attachment'
+      response.headers["Cache-Control"] = "private, no-store"
+      send_data data, filename: attachment.filename.to_s, type: attachment.content_type, disposition: "attachment"
     end
   end
 end
