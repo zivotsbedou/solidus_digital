@@ -29,7 +29,8 @@ Added:
   links when the capture makes them paid.
 - Links stop working when their order can no longer ship or is no longer paid.
 - Shipments that hold only digital items are shipped after the e-mail, without
-  the stock shipped e-mail.
+  the stock shipped e-mail. The paid order stays cancelable while only those
+  shipments have shipped; canceling leaves them shipped and stops the links.
 - The `digital_links_created` event, for stores that send their own e-mails.
 - Protected PDFs: a license page after the cover and print-only AES-256
   encryption, built per download with Prawn and qpdf.
